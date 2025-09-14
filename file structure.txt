@@ -1,0 +1,26 @@
+lumina.ai/
+│
+├── backend/                  # Flask + API server
+│   ├── app.py                # Main Flask server
+│   ├── adjustment.py         # Adjustment layer
+│   ├── models/               # Saved ML models
+│   │   └── solar_model.joblib
+│   ├── requirements.txt      # Python dependencies
+│   └── .env                  # Secrets (OpenWeather API key etc.)
+│
+├── frontend/                 # Custom HTML/JS/CSS dashboard
+│   ├── index.html            # Main dashboard page
+│   ├── settings.html         # Settings / global values page
+│   ├── css/
+│   │   └── style.css         # Custom styling
+│   ├── js/
+│   │   └── main.js           # Frontend logic, AJAX calls
+│   └── assets/
+│       ├── logo.png
+│       └── icons/            # Any other images/icons
+│
+├── utils/                    # Optional utilities
+│   └── helpers.py            # e.g., CSV export, local storage handling
+│
+├── README.md                 # Project overview
+└── LICENSE

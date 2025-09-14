@@ -1,0 +1,2405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina.ai - Solar Power Prediction Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e1e3f 0%, #2a2a5c 100%);
+            padding: 2rem 0;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow-y: auto;
+        }
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(251, 191, 36, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            pointer-events: none;
+        }
+        .sidebar-content {
+            position: relative;
+            z-index: 1;
+        }
+        .brand {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+            margin-bottom: 2rem;
+        }
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .brand .icon {
+            color: #fbbf24;
+        }
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+        .nav-title {
+            padding: 0 2rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-item {
+            margin: 0.25rem 1rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            background: rgba(251, 191, 36, 0.1);
+            transform: translateX(4px);
+        }
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .nav-item.active .nav-link {
+            color: #fbbf24;
+        }
+        .nav-link:hover {
+            color: #fbbf24;
+        }
+        .stats-section {
+            margin-top: 2rem;
+            padding: 0 1rem;
+        }
+        .stat-card {
+            background: rgba(30, 30, 63, 0.6);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .stat-card h4 {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .stat-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+        .stat-badge {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1e1e3f;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+        }
+        .export-btn {
+            margin: 2rem 1rem 0;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            color: white;
+            padding: 0.875rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+        .header-left {
+            flex: 1;
+        }
+        .header-left h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+        .header-left p {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        .btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1e1e3f;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+        }
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.5);
+            color: #cbd5e1;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(203, 213, 225, 0.2);
+        }
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.7);
+            color: #f1f5f9;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card-main {
+            background: rgba(30, 30, 63, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s ease;
+        }
+        .stat-card-main:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .stat-icon {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1e1e3f;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .stat-header h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+        .stat-main-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+        .stat-subtitle {
+            color: #64748b;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .trend-positive {
+            color: #10b981;
+        }
+        .chart-container {
+            background: rgba(30, 30, 63, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            margin-bottom: 2rem;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .chart-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chart-btn {
+            background: rgba(71, 85, 105, 0.5);
+            color: #cbd5e1;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .chart-btn.active,
+        .chart-btn:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1e1e3f;
+        }
+        #predictionChart {
+            max-height: 400px;
+        }
+        .right-panel {
+            background: rgba(30, 30, 63, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .panel-section {
+            margin-bottom: 2rem;
+        }
+        .panel-section:last-child {
+            margin-bottom: 0;
+        }
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+            transition: all 0.3s ease;
+        }
+        .prediction-item:hover {
+            background: rgba(51, 65, 85, 0.5);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+        .prediction-location {
+            color: #f1f5f9;
+            font-weight: 500;
+        }
+        .prediction-time {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        .prediction-value {
+            text-align: right;
+        }
+        .prediction-power {
+            font-weight: 700;
+            color: #fbbf24;
+            font-size: 1.125rem;
+        }
+        .prediction-accuracy {
+            font-size: 0.75rem;
+            color: #10b981;
+        }
+        .ai-insight-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .ai-insight-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+        }
+        .ai-insight-text {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-top: 0.5rem;
+        }
+        .loading {
+            text-align: center;
+            color: #64748b;
+            padding: 2rem;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(251, 191, 36, 0.2);
+            border-radius: 50%;
+            border-top-color: #fbbf24;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #e2e8f0;
+            margin-bottom: 0.5rem;
+        }
+        .form-input {
+            width: 100%;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.875rem 1rem;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+        .form-input::placeholder {
+            color: #64748b;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .slider-group {
+            margin-bottom: 1.5rem;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .slider-value {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(100, 116, 139, 0.3);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+        }
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #94a3b8;
+        }
+        .empty-state p {
+            margin-bottom: 2rem;
+        }
+        .upload-area {
+            border: 2px dashed rgba(251, 191, 36, 0.3);
+            border-radius: 1rem;
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        .upload-area:hover {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.05);
+        }
+        .file-list {
+            margin-top: 1rem;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        .file-item:hover {
+            background: rgba(51, 65, 85, 0.5);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+        .file-icon {
+            color: #fbbf24;
+            font-size: 1.5rem;
+        }
+        .file-name {
+            color: #f1f5f9;
+            font-weight: 500;
+        }
+        .file-date {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+        .file-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .reports-table th,
+        .reports-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+        }
+        .reports-table th {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        .reports-table tr:hover {
+            background: rgba(251, 191, 36, 0.05);
+        }
+        .scenario-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .scenario-card {
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+            transition: all 0.3s ease;
+        }
+        .scenario-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(251, 191, 36, 0.4);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .scenario-name {
+            font-weight: 600;
+            color: #f1f5f9;
+            font-size: 1rem;
+        }
+        .scenario-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1e1e3f;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .scenario-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(251, 191, 36, 0.4);
+        }
+        .scenario-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(71, 85, 105, 0.3);
+            border-radius: 0.5rem;
+        }
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 0.25rem;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .comparison-chart {
+            margin-top: 2rem;
+            height: 300px;
+            background: rgba(30, 30, 63, 0.4);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+        .comparison-chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .comparison-chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+        .summary-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .summary-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+        .summary-value {
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+        .summary-delta {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+        }
+        .delta-positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        .delta-negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            .card-grid {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .what-if-section {
+                margin-top: 1.5rem;
+            }
+            .scenario-cards {
+                grid-template-columns: 1fr;
+            }
+            .comparison-chart {
+                margin-top: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-content">
+                <div class="brand">
+                    <h1><i class="fas fa-solar-panel icon"></i> Lumina.ai</h1>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-title">Navigation</div>
+                    <ul class="nav-menu">
+                        <li class="nav-item active" data-section="dashboard">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-home"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item" data-section="new-prediction">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                New Prediction
+                            </a>
+                        </li>
+                        <li class="nav-item" data-section="upload-data">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-upload"></i>
+                                Upload Data
+                            </a>
+                        </li>
+                        <li class="nav-item" data-section="history">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-history"></i>
+                                Prediction History
+                            </a>
+                        </li>
+                        <li class="nav-item" data-section="reports">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-chart-bar"></i>
+                                Reports
+                            </a>
+                        </li>
+                        <li class="nav-item" data-section="settings">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-cog"></i>
+                                Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-title">Quick Stats</div>
+                    <div class="stat-card">
+                        <h4>Today's Predictions</h4>
+                        <div class="stat-value">
+                            <span class="stat-number" id="todaysPredictions">0</span>
+                            <span class="stat-badge" id="todayAccuracy">--%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Avg Accuracy</h4>
+                        <div class="stat-value">
+                            <span class="stat-number" id="avgAccuracy">--%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Data Files</h4>
+                        <div class="stat-value">
+                            <span class="stat-number" id="dataFiles">0</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="export-btn" id="exportBtn">
+                    <i class="fas fa-download"></i>
+                    Export Results
+                </button>
+            </div>
+        </nav>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section active">
+                <div class="header">
+                    <div class="header-left">
+                        <h2>Solar Generation Dashboard</h2>
+                        <p>Real-time AI-powered solar generation forecasts</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                        <button class="btn" id="newPredictionBtn">
+                            <i class="fas fa-sun"></i>
+                            New Prediction
+                        </button>
+                    </div>
+                </div>
+                <!-- Stats Grid -->
+                <div class="card-grid">
+                    <div class="stat-card-main">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <h3>Current Generation</h3>
+                        </div>
+                        <div class="stat-main-value" id="currentGeneration">-- kW</div>
+                        <div class="stat-subtitle">
+                            <span id="currentLocation">Loading...</span>
+                            <span class="trend-positive" id="currentTrend">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-main">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h3>Peak Generation</h3>
+                        </div>
+                        <div class="stat-main-value" id="peakGeneration">-- kW</div>
+                        <div class="stat-subtitle" id="peakTime">--</div>
+                    </div>
+                    <div class="stat-card-main">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <h3>Daily Total</h3>
+                        </div>
+                        <div class="stat-main-value" id="dailyTotal">-- kWh</div>
+                        <div class="stat-subtitle">
+                            <span class="trend-positive" id="dailyTrend">--</span>
+                            <span id="dailyComparison">from last week</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-main">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h3>System Status</h3>
+                        </div>
+                        <div class="stat-main-value" id="systemStatus">--</div>
+                        <div class="stat-subtitle" id="systemDetail">Connecting to backend...</div>
+                    </div>
+                </div>
+                <!-- Chart Section -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <i class="fas fa-chart-line"></i>
+                            Today's Generation Forecast
+                        </div>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" id="lineChart">Line</button>
+                            <button class="chart-btn" id="barChart">Bar</button>
+                        </div>
+                    </div>
+                    <canvas id="predictionChart"></canvas>
+                </div>
+                <!-- Two Column Layout -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <!-- Prediction Results -->
+                    <div class="right-panel">
+                        <div class="panel-section">
+                            <div class="panel-title">
+                                <i class="fas fa-chart-line"></i>
+                                Prediction Results
+                            </div>
+                            <div id="predictionResults">
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem;" id="predictionStats">
+                                    <div>
+                                        <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Current Generation</div>
+                                        <div style="font-size: 1.5rem; font-weight: 700; color: #f1f5f9;">-- kW</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Peak Generation</div>
+                                        <div style="font-size: 1.5rem; font-weight: 700; color: #f1f5f9;">-- kW</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Efficiency</div>
+                                        <div style="font-size: 1.5rem; font-weight: 700; color: #fbbf24;">--%</div>
+                                        <div style="font-size: 0.75rem; color: #10b981;">--</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Forecast Accuracy</div>
+                                        <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">--%</div>
+                                    </div>
+                                </div>
+                                <p style="color: #94a3b8; font-size: 0.875rem; line-height: 1.5;" id="predictionDisclaimer">
+                                    Connect to backend to see real-time predictions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Recent Predictions & AI Insights -->
+                    <div class="right-panel">
+                        <div class="panel-section">
+                            <div class="panel-title">
+                                <i class="fas fa-clock"></i>
+                                Recent Predictions
+                            </div>
+                            <div id="recentPredictions">
+                                <div class="prediction-item">
+                                    <div>
+                                        <div class="prediction-location">No data yet</div>
+                                        <div class="prediction-time">--</div>
+                                    </div>
+                                    <div class="prediction-value">
+                                        <div class="prediction-power">-- kW</div>
+                                        <div class="prediction-accuracy">--% accuracy</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-section">
+                            <div class="panel-title">
+                                <i class="fas fa-robot"></i>
+                                AI Insights
+                            </div>
+                            <div class="ai-insight-box" id="aiInsightBox">
+                                <div class="ai-insight-text">
+                                    Connect to backend to generate AI insights.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- NEW PREDICTION SECTION -->
+            <div id="new-prediction" class="content-section">
+                <div class="header">
+                    <div class="header-left">
+                        <h2>New Solar Prediction</h2>
+                        <p>Configure your solar system parameters for accurate AI forecasting</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="right-panel">
+                        <div class="panel-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Solar Generation Parameters
+                        </div>
+                        <div class="panel-section">
+                            <h4 style="color: #e2e8f0; margin-bottom: 1rem;">Geographic Location</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Latitude</label>
+                                    <input type="number" class="form-input" id="latitude" placeholder="37.7749" step="0.0001" value="23.0225">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Longitude</label>
+                                    <input type="number" class="form-input" id="longitude" placeholder="-122.4194" step="0.0001" value="72.5714">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-section">
+                            <h4 style="color: #e2e8f0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-calendar"></i>
+                                Date & Time
+                            </h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" class="form-input" id="predictionDate">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Time</label>
+                                    <select class="form-input" id="predictionTime">
+                                        <option value="">Select time</option>
+                                        <option value="00:00">00:00</option>
+                                        <option value="03:00">03:00</option>
+                                        <option value="06:00">06:00</option>
+                                        <option value="09:00">09:00</option>
+                                        <option value="12:00">12:00</option>
+                                        <option value="15:00">15:00</option>
+                                        <option value="18:00">18:00</option>
+                                        <option value="21:00">21:00</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-section">
+                            <h4 style="color: #e2e8f0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-solar-panel"></i>
+                                Panel Orientation
+                            </h4>
+                            <div class="slider-group">
+                                <div class="slider-label">
+                                    <label class="form-label">Tilt Angle</label>
+                                    <span class="slider-value" id="tiltValue">20°</span>
+                                </div>
+                                <input type="range" class="slider" id="tiltSlider" min="0" max="90" value="20">
+                            </div>
+                            <div class="slider-group">
+                                <div class="slider-label">
+                                    <label class="form-label">Azimuth Angle</label>
+                                    <span class="slider-value" id="azimuthValue">180°</span>
+                                </div>
+                                <input type="range" class="slider" id="azimuthSlider" min="0" max="360" value="180">
+                            </div>
+                        </div>
+                        <div class="panel-section">
+                            <h4 style="color: #e2e8f0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-cogs"></i>
+                                System Configuration
+                            </h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Panel Area (m²)</label>
+                                    <input type="number" class="form-input" id="panelArea" placeholder="10.0" step="0.1" value="10.0">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">System Efficiency (%)</label>
+                                    <input type="number" class="form-input" id="systemEfficiency" placeholder="90" min="0" max="100" value="90">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Electricity Price (₹ per kWh)</label>
+                                <input type="number" class="form-input" id="electricityPrice" placeholder="7.0" step="0.1" value="7.0">
+                            </div>
+                        </div>
+                        <button class="btn" id="generatePrediction" style="width: 100%; margin-top: 1rem;">
+                            <i class="fas fa-play"></i>
+                            Generate Prediction
+                        </button>
+                    </div>
+                    <!-- What-If Analysis Section -->
+                    <div class="right-panel">
+                        <div class="what-if-section">
+                            <div class="what-if-header">
+                                <i class="fas fa-lightbulb"></i>
+                                <h3>What-If Scenario Analysis</h3>
+                            </div>
+                            <p style="color: #94a3b8; margin-bottom: 1.5rem;">Compare different configurations to maximize your solar energy output.</p>
+                            <div class="scenario-cards">
+                                <div class="scenario-card">
+                                    <div class="scenario-header">
+                                        <div class="scenario-name">Default Configuration</div>
+                                        <button class="scenario-btn" onclick="runWhatIfScenario('default')">Run</button>
+                                    </div>
+                                    <div class="scenario-stats">
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="default-gen">--</div>
+                                            <div class="stat-label">kWh/day</div>
+                                        </div>
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="default-peak">--</div>
+                                            <div class="stat-label">kW peak</div>
+                                        </div>
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="default-savings">--</div>
+                                            <div class="stat-label">₹ savings</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="scenario-card">
+                                    <div class="scenario-header">
+                                        <div class="scenario-name">Optimized Tilt</div>
+                                        <button class="scenario-btn" onclick="runWhatIfScenario('optimized')">Run</button>
+                                    </div>
+                                    <div class="scenario-stats">
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="optimized-gen">--</div>
+                                            <div class="stat-label">kWh/day</div>
+                                        </div>
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="optimized-peak">--</div>
+                                            <div class="stat-label">kW peak</div>
+                                        </div>
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="optimized-savings">--</div>
+                                            <div class="stat-label">₹ savings</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="scenario-card">
+                                    <div class="scenario-header">
+                                        <div class="scenario-name">High Efficiency</div>
+                                        <button class="scenario-btn" onclick="runWhatIfScenario('high-efficiency')">Run</button>
+                                    </div>
+                                    <div class="scenario-stats">
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="high-eff-gen">--</div>
+                                            <div class="stat-label">kWh/day</div>
+                                        </div>
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="high-eff-peak">--</div>
+                                            <div class="stat-label">kW peak</div>
+                                        </div>
+                                        <div class="stat-box">
+                                            <div class="stat-value" id="high-eff-savings">--</div>
+                                            <div class="stat-label">₹ savings</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="comparison-chart" id="comparisonChartPlaceholder">
+                                Run scenarios to visualize performance comparison
+                            </div>
+                            <div style="margin-top: 1.5rem;">
+                                <div class="summary-stat">
+                                    <span class="summary-label">Potential Increase:</span>
+                                    <span class="summary-value" id="potentialIncrease">--%</span>
+                                    <span class="summary-delta delta-positive" id="increaseDelta">+0%</span>
+                                </div>
+                                <div class="summary-stat">
+                                    <span class="summary-label">Estimated Annual Savings:</span>
+                                    <span class="summary-value" id="annualSavings">₹--</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-section" style="margin-top: 1.5rem;">
+                            <div class="panel-title">
+                                <i class="fas fa-info-circle"></i>
+                                How It Works
+                            </div>
+                            <p style="color: #94a3b8; font-size: 0.875rem; line-height: 1.6;">
+                                Lumina.ai uses advanced AI models trained on real-world solar data to predict energy output based on your location, panel configuration, and weather forecasts. 
+                                The What-If analysis compares your current setup against optimized alternatives to show you how small changes can significantly increase your energy yield.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- UPLOAD DATA SECTION -->
+            <div id="upload-data" class="content-section">
+                <div class="header">
+                    <div class="header-left">
+                        <h2>Upload Data</h2>
+                        <p>Upload your solar data files for analysis</p>
+                    </div>
+                </div>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #fbbf24; margin-bottom: 1rem;"></i>
+                    <h3>Drag & Drop Files Here</h3>
+                    <p style="color: #94a3b8; margin-bottom: 1rem;">CSV, TXT, or XLSX files supported</p>
+                    <button class="btn" style="margin: 0 auto;">Choose Files</button>
+                    <input type="file" id="fileInput" style="display: none;" accept=".csv,.txt,.xlsx">
+                </div>
+                <div class="file-list" id="fileList">
+                    <h3 style="color: #f1f5f9; margin-bottom: 1rem;">Recent Uploads</h3>
+                    <div class="loading">Loading upload history...</div>
+                </div>
+            </div>
+            <!-- HISTORY SECTION -->
+            <div id="history" class="content-section">
+                <div class="header">
+                    <div class="header-left">
+                        <h2>Prediction History</h2>
+                        <p>View and analyze your past predictions</p>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div>
+                        <label for="historyDays" style="color: #e2e8f0; font-weight: 500;">Show last:</label>
+                        <select id="historyDays" style="background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(100, 116, 139, 0.3); color: #e2e8f0; padding: 0.5rem; border-radius: 0.5rem; margin-left: 1rem;">
+                            <option value="7">7 days</option>
+                            <option value="30" selected>30 days</option>
+                            <option value="90">90 days</option>
+                            <option value="365">1 year</option>
+                        </select>
+                    </div>
+                    <button class="btn" id="exportHistoryBtn">
+                        <i class="fas fa-download"></i>
+                        Export All
+                    </button>
+                </div>
+                <div id="historyContainer">
+                    <div class="loading">Loading prediction history...</div>
+                </div>
+            </div>
+            <!-- REPORTS SECTION -->
+            <div id="reports" class="content-section">
+                <div class="header">
+                    <div class="header-left">
+                        <h2>Reports & Analytics</h2>
+                        <p>Generate detailed reports and export data</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                    <div class="right-panel">
+                        <div class="panel-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Summary Statistics
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Total Predictions</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f1f5f9;" id="totalPredictions">--</div>
+                            </div>
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Avg Daily Gen.</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #fbbf24;" id="avgDailyGen">-- kWh</div>
+                            </div>
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Total Est. Gen.</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;" id="totalEstGen">-- kWh</div>
+                            </div>
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Avg Accuracy</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #fbbf24;" id="avgAccuracyReport">--%</div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="color: #e2e8f0; margin-bottom: 1rem;">Top Locations</h4>
+                            <div id="topLocations" style="max-height: 200px; overflow-y: auto;">
+                                <div class="loading">Loading location data...</div>
+                            </div>
+                        </div>
+                        <button class="btn" id="exportSummaryBtn" style="width: 100%;">
+                            <i class="fas fa-download"></i>
+                            Export Summary
+                        </button>
+                    </div>
+                    <div class="right-panel">
+                        <div class="panel-title">
+                            <i class="fas fa-chart-line"></i>
+                            Daily Trends
+                        </div>
+                        <div class="report-chart-container" id="dailyTrendsChart">
+                            <div class="loading">Loading trend data...</div>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <h4 style="color: #e2e8f0; margin-bottom: 1rem;">Export Options</h4>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <button class="btn" id="exportCsvBtn" style="flex: 1;">
+                                    <i class="fas fa-file-csv"></i>
+                                    CSV
+                                </button>
+                                <button class="btn" id="exportPdfBtn" style="flex: 1; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                                    <i class="fas fa-file-pdf"></i>
+                                    PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-panel">
+                    <div class="panel-title">
+                        <i class="fas fa-table"></i>
+                        Detailed Report
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="reports-table" id="detailedReportTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th>Total Gen (kWh)</th>
+                                    <th>Peak Power (kW)</th>
+                                    <th>Accuracy</th>
+                                    <th>Savings (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 2rem;">No data available</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- SETTINGS SECTION -->
+            <div id="settings" class="content-section">
+                <div class="header">
+                    <div class="header-left">
+                        <h2>Settings</h2>
+                        <p>Configure your preferences and account settings</p>
+                    </div>
+                </div>
+                <div class="right-panel" style="max-width: 600px;">
+                    <div class="panel-title">
+                        <i class="fas fa-cog"></i>
+                        User Settings
+                    </div>
+                    <div class="panel-section">
+                        <h4 style="color: #e2e8f0; margin-bottom: 1rem;">System Configuration</h4>
+                        <div class="form-group">
+                            <label class="form-label">Electricity Price (₹ per kWh)</label>
+                            <input type="number" class="form-input" id="electricityPriceSetting" placeholder="7.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Panel Area (m²)</label>
+                            <input type="number" class="form-input" id="panelAreaSetting" placeholder="10.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">System Efficiency (0-1)</label>
+                            <input type="number" class="form-input" id="systemEfficiencySetting" placeholder="0.9" min="0" max="1" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Default Tilt Angle (degrees)</label>
+                            <input type="number" class="form-input" id="defaultTiltSetting" placeholder="20" min="0" max="90">
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <button class="btn" id="saveSettings" style="width: 100%;">
+                            <i class="fas fa-save"></i>
+                            Save Settings
+                        </button>
+                        <button class="btn btn-secondary" id="resetSettings" style="width: 100%; margin-top: 1rem;">
+                            <i class="fas fa-undo"></i>
+                            Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        let currentChart = null;
+        let currentSettings = {
+            price: 7.0,
+            area: 10.0,
+            efficiency: 0.9,
+            tilt: 20,
+            apiUrl: "http://localhost:5000"
+        };
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeNavigation();
+            initializeSliders();
+            initializeChart();
+            loadSettings();
+            setCurrentDate();
+            checkBackendConnection();
+            updateDashboardStats();
+            setupFileUpload();
+            loadHistory();
+            loadReportsData();
+            loadUploadedFiles();
+            // Trigger initial prediction on dashboard load
+            if (document.getElementById('dashboard').classList.contains('active')) {
+                setTimeout(() => {
+                    generateLivePrediction();
+                }, 1000);
+            }
+        });
+        function initializeNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('.content-section');
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetSection = this.dataset.section;
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    sections.forEach(section => section.classList.remove('active'));
+                    document.getElementById(targetSection).classList.add('active');
+                    if (targetSection === 'dashboard') {
+                        updateDashboardStats();
+                        generateLivePrediction();
+                    } else if (targetSection === 'history') {
+                        loadHistory();
+                    } else if (targetSection === 'reports') {
+                        loadReportsData();
+                    } else if (targetSection === 'upload-data') {
+                        loadUploadedFiles();
+                    }
+                });
+            });
+            document.getElementById('newPredictionBtn').addEventListener('click', () => {
+                switchToSection('new-prediction');
+            });
+            document.getElementById('refreshBtn').addEventListener('click', () => {
+                generateLivePrediction();
+            });
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                exportData('predictions');
+            });
+            document.getElementById('exportHistoryBtn').addEventListener('click', () => {
+                exportData('predictions');
+            });
+            document.getElementById('exportSummaryBtn').addEventListener('click', () => {
+                exportData('summary');
+            });
+            document.getElementById('exportCsvBtn').addEventListener('click', () => {
+                exportData('predictions');
+            });
+            document.getElementById('exportPdfBtn').addEventListener('click', () => {
+                alert('PDF export functionality would be implemented in the full application.');
+            });
+        }
+        function switchToSection(sectionId) {
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            if (sectionId === 'dashboard') {
+                updateDashboardStats();
+                generateLivePrediction();
+            } else if (sectionId === 'history') {
+                loadHistory();
+            } else if (sectionId === 'reports') {
+                loadReportsData();
+            } else if (sectionId === 'upload-data') {
+                loadUploadedFiles();
+            }
+        }
+        function initializeSliders() {
+            const tiltSlider = document.getElementById('tiltSlider');
+            const azimuthSlider = document.getElementById('azimuthSlider');
+            const tiltValue = document.getElementById('tiltValue');
+            const azimuthValue = document.getElementById('azimuthValue');
+            tiltSlider.addEventListener('input', function() {
+                tiltValue.textContent = this.value + '°';
+            });
+            azimuthSlider.addEventListener('input', function() {
+                azimuthValue.textContent = this.value + '°';
+            });
+        }
+        function initializeChart() {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+                    datasets: [{
+                        label: 'Solar Generation (kW)',
+                        data: Array(8).fill(0),
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#fbbf24',
+                        pointBorderColor: '#1e1e3f',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(100, 116, 139, 0.2)'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(100, 116, 139, 0.2)'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            document.getElementById('lineChart').addEventListener('click', function() {
+                switchChartType('line', this);
+            });
+            document.getElementById('barChart').addEventListener('click', function() {
+                switchChartType('bar', this);
+            });
+        }
+        function switchChartType(type, button) {
+            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentChart.config.type = type;
+            currentChart.update();
+        }
+        function setCurrentDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('predictionDate').value = today;
+        }
+        async function loadSettings() {
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/settings`);
+                const settings = await response.json();
+                currentSettings = {
+                    ...currentSettings,
+                    price: settings.price || 7.0,
+                    area: settings.area || 10.0,
+                    efficiency: settings.efficiency || 0.9,
+                    tilt: settings.tilt || 20
+                };
+                document.getElementById('electricityPriceSetting').value = currentSettings.price;
+                document.getElementById('panelAreaSetting').value = currentSettings.area;
+                document.getElementById('systemEfficiencySetting').value = currentSettings.efficiency;
+                document.getElementById('defaultTiltSetting').value = currentSettings.tilt;
+                document.getElementById('electricityPrice').value = currentSettings.price;
+                document.getElementById('panelArea').value = currentSettings.area;
+                document.getElementById('systemEfficiency').value = currentSettings.efficiency * 100;
+                document.getElementById('tiltSlider').value = currentSettings.tilt;
+                document.getElementById('tiltValue').textContent = currentSettings.tilt + '°';
+                updateWhatIfScenarios();
+            } catch (error) {
+                console.log('Using default settings - backend not connected');
+                currentSettings = {
+                    price: 7.0,
+                    area: 10.0,
+                    efficiency: 0.9,
+                    tilt: 20,
+                    apiUrl: currentSettings.apiUrl
+                };
+                document.getElementById('electricityPriceSetting').value = currentSettings.price;
+                document.getElementById('panelAreaSetting').value = currentSettings.area;
+                document.getElementById('systemEfficiencySetting').value = currentSettings.efficiency;
+                document.getElementById('defaultTiltSetting').value = currentSettings.tilt;
+                document.getElementById('electricityPrice').value = currentSettings.price;
+                document.getElementById('panelArea').value = currentSettings.area;
+                document.getElementById('systemEfficiency').value = currentSettings.efficiency * 100;
+                document.getElementById('tiltSlider').value = currentSettings.tilt;
+                document.getElementById('tiltValue').textContent = currentSettings.tilt + '°';
+                updateWhatIfScenarios();
+            }
+        }
+        document.getElementById('saveSettings').addEventListener('click', async function() {
+            const settings = {
+                price: parseFloat(document.getElementById('electricityPriceSetting').value) || 7.0,
+                area: parseFloat(document.getElementById('panelAreaSetting').value) || 10.0,
+                efficiency: parseFloat(document.getElementById('systemEfficiencySetting').value) || 0.9,
+                tilt: parseInt(document.getElementById('defaultTiltSetting').value) || 20
+            };
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+                if (response.ok) {
+                    currentSettings = settings;
+                    alert('Settings saved successfully!');
+                    document.getElementById('electricityPrice').value = settings.price;
+                    document.getElementById('panelArea').value = settings.area;
+                    document.getElementById('systemEfficiency').value = settings.efficiency * 100;
+                    document.getElementById('tiltSlider').value = settings.tilt;
+                    document.getElementById('tiltValue').textContent = settings.tilt + '°';
+                    updateWhatIfScenarios();
+                } else {
+                    alert('Failed to save settings');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Error saving settings - check if backend is running');
+            }
+        });
+        document.getElementById('resetSettings').addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all settings to defaults?')) {
+                document.getElementById('electricityPriceSetting').value = 7.0;
+                document.getElementById('panelAreaSetting').value = 10.0;
+                document.getElementById('systemEfficiencySetting').value = 0.9;
+                document.getElementById('defaultTiltSetting').value = 20;
+                document.getElementById('electricityPrice').value = 7.0;
+                document.getElementById('panelArea').value = 10.0;
+                document.getElementById('systemEfficiency').value = 90;
+                document.getElementById('tiltSlider').value = 20;
+                document.getElementById('tiltValue').textContent = '20°';
+                currentSettings = {
+                    price: 7.0,
+                    area: 10.0,
+                    efficiency: 0.9,
+                    tilt: 20,
+                    apiUrl: currentSettings.apiUrl
+                };
+                updateWhatIfScenarios();
+                alert('Settings reset to defaults!');
+            }
+        });
+        document.getElementById('generatePrediction').addEventListener('click', async function() {
+            const button = this;
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            const resultsContainer = document.getElementById('predictionResults');
+            resultsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Generating prediction...</p></div>';
+            try {
+                const latitude = parseFloat(document.getElementById('latitude').value) || 23.0225;
+                const longitude = parseFloat(document.getElementById('longitude').value) || 72.5714;
+                const area = parseFloat(document.getElementById('panelArea').value) || currentSettings.area;
+                const efficiency = parseFloat(document.getElementById('systemEfficiency').value) / 100 || currentSettings.efficiency;
+                const tilt = parseInt(document.getElementById('tiltSlider').value) || currentSettings.tilt;
+                const price = parseFloat(document.getElementById('electricityPrice').value) || currentSettings.price;
+                const predictionData = {
+                    latitude: latitude,
+                    longitude: longitude,
+                    area: area,
+                    efficiency: efficiency,
+                    tilt: tilt,
+                    price: price
+                };
+                const response = await fetch(`${currentSettings.apiUrl}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(predictionData)
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    displayPredictionResults(result);
+                    updateDashboard(result);
+                    updateWhatIfScenarios();
+                    updateRecentPredictions(result);
+                } else {
+                    throw new Error('Prediction failed');
+                }
+            } catch (error) {
+                console.error('Prediction error:', error);
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Prediction Failed</h3>
+                        <p>Unable to generate prediction. Please check if the backend server is running and try again.</p>
+                        <p style="color: #64748b; font-size: 0.875rem; margin-top: 1rem;">
+                            Expected backend at: ${currentSettings.apiUrl}
+                        </p>
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        });
+        function displayPredictionResults(result) {
+            const resultsContainer = document.getElementById('predictionResults');
+            const totalGeneration = result.prediction.reduce((sum, val) => sum + val, 0);
+            const avgGeneration = totalGeneration / result.prediction.length;
+            const maxGeneration = Math.max(...result.prediction);
+            const estimatedSavings = ((totalGeneration/1000) * currentSettings.price).toFixed(2);
+            resultsContainer.innerHTML = `
+                <div class="panel-section">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                        <div>
+                            <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Total Generation</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #fbbf24;">${(totalGeneration/1000).toFixed(2)} kWh</div>
+                        </div>
+                        <div>
+                            <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Peak Power</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${(maxGeneration/1000).toFixed(2)} kW</div>
+                        </div>
+                        <div>
+                            <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Average Power</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #f1f5f9;">${(avgGeneration/1000).toFixed(2)} kW</div>
+                        </div>
+                        <div>
+                            <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Est. Savings</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;">₹${estimatedSavings}</div>
+                        </div>
+                    </div>
+                    <div class="ai-insight-box">
+                        <div class="panel-title" style="margin-bottom: 0.5rem;">
+                            <i class="fas fa-robot"></i>
+                            AI Insights
+                        </div>
+                        <div class="ai-insight-text">${result.aiInsight || 'AI insights unavailable'}</div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <h4 style="color: #e2e8f0; margin-bottom: 1rem;">Detailed Analysis</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Sunlight Hours</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: #fbbf24;">${result.detailedInsights.sunlightHours || '--'}</div>
+                            </div>
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Weather Rating</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: ${result.detailedInsights.weatherRating === 'excellent' ? '#10b981' : result.detailedInsights.weatherRating === 'good' ? '#fbbf24' : '#f59e0b'};">${result.detailedInsights.weatherSummary || '--'}</div>
+                            </div>
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Efficiency Rating</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: ${result.detailedInsights.efficiencyColor || '#fbbf24'};">${result.detailedInsights.efficiencyRating || '--'}</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Appliance Equivalent</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: #f1f5f9;">${result.detailedInsights.applianceEquivalent || '--'}</div>
+                            </div>
+                            <div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-bottom: 0.25rem;">Appliances Supported</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: #f1f5f9;">${result.detailedInsights.applianceCount || '--'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            updateChartWithPrediction(result);
+            updatePredictionStats({
+                current: (result.prediction[4] || 0)/1000,
+                peak: (maxGeneration/1000),
+                efficiency: result.detailedInsights?.efficiencyPercent || 0,
+                accuracy: result.accuracy || 94.2
+            });
+            const aiInsightBox = document.getElementById('aiInsightBox');
+            if (aiInsightBox) {
+                aiInsightBox.innerHTML = `
+                    <div class="ai-insight-text">${result.aiInsight || 'AI insights generated from latest prediction'}</div>
+                `;
+            }
+        }
+        function updateChartWithPrediction(result) {
+            if (currentChart && result.hours && result.prediction) {
+                const labels = result.hours.map(hour => `${hour}:00`);
+                const data = result.prediction.map(val => val / 1000);
+                currentChart.data.labels = labels;
+                currentChart.data.datasets[0].data = data;
+                currentChart.update();
+            }
+        }
+        function updatePredictionStats(stats) {
+            const statsContainer = document.getElementById('predictionStats');
+            if (!statsContainer) return;
+            const children = statsContainer.children;
+            children[0].querySelector('div:nth-child(2)').textContent = `${stats.current.toFixed(2)} kW`;
+            children[1].querySelector('div:nth-child(2)').textContent = `${stats.peak.toFixed(2)} kW`;
+            children[2].querySelector('div:nth-child(2)').textContent = `${stats.efficiency.toFixed(1)}%`;
+            children[2].querySelector('div:nth-child(3)').textContent = stats.efficiency > 70 ? "Excellent" : stats.efficiency > 50 ? "Good" : "Fair";
+            children[3].querySelector('div:nth-child(2)').textContent = `${stats.accuracy.toFixed(1)}%`;
+        }
+        function updateDashboard(result) {
+            const aiInsightBox = document.getElementById('aiInsightBox');
+            if (aiInsightBox) {
+                aiInsightBox.innerHTML = `
+                    <div class="ai-insight-text">${result.aiInsight || 'AI insights generated from latest prediction'}</div>
+                `;
+            }
+            if (result.prediction && result.prediction.length > 0) {
+                const maxPower = Math.max(...result.prediction);
+                const totalPower = result.prediction.reduce((sum, val) => sum + val, 0);
+                document.getElementById('peakGeneration').textContent = `${(maxPower/1000).toFixed(2)} kW`;
+                document.getElementById('dailyTotal').textContent = `${(totalPower/1000).toFixed(2)} kWh`;
+                const peakHourIndex = result.prediction.indexOf(maxPower);
+                const peakHour = result.hours[peakHourIndex];
+                document.getElementById('peakTime').textContent = `at ${peakHour}:00`;
+                const currentGeneration = result.prediction[4] || 0;
+                document.getElementById('currentGeneration').textContent = `${(currentGeneration/1000).toFixed(2)} kW`;
+                const efficiency = result.detailedInsights?.efficiencyPercent || 0;
+                const statusText = efficiency > 70 ? "Excellent" : efficiency > 50 ? "Good" : "Fair";
+                const statusColor = efficiency > 70 ? "#10b981" : efficiency > 50 ? "#fbbf24" : "#f59e0b";
+                document.getElementById('systemStatus').textContent = statusText;
+                document.getElementById('systemStatus').style.color = statusColor;
+                document.getElementById('systemDetail').textContent = `${efficiency.toFixed(1)}% efficiency`;
+                document.getElementById('currentLocation').textContent = `${result.latitude?.toFixed(3)}, ${result.longitude?.toFixed(3)}`;
+                const dailyTrend = result.detailedInsights?.morningGenerationPercent > 50 ? "+15%" : "-5%";
+                document.getElementById('dailyTrend').textContent = dailyTrend;
+            }
+        }
+        function updateRecentPredictions(result) {
+            const recentPredictions = document.getElementById('recentPredictions');
+            if (!recentPredictions) return;
+            const maxPower = Math.max(...result.prediction);
+            const predictionItem = document.createElement('div');
+            predictionItem.className = 'prediction-item';
+            predictionItem.innerHTML = `
+                <div>
+                    <div class="prediction-location">${result.latitude?.toFixed(3)}, ${result.longitude?.toFixed(3)}</div>
+                    <div class="prediction-time">${result.hours[4]}:00</div>
+                </div>
+                <div class="prediction-value">
+                    <div class="prediction-power">${(maxPower/1000).toFixed(2)} kW</div>
+                    <div class="prediction-accuracy">${result.accuracy.toFixed(1)}% accuracy</div>
+                </div>
+            `;
+            if (recentPredictions.firstChild) {
+                recentPredictions.insertBefore(predictionItem, recentPredictions.firstChild);
+            } else {
+                recentPredictions.appendChild(predictionItem);
+            }
+            while (recentPredictions.children.length > 3) {
+                recentPredictions.removeChild(recentPredictions.lastChild);
+            }
+        }
+        function updateWhatIfScenarios() {
+            const defaultParams = {
+                area: currentSettings.area,
+                efficiency: currentSettings.efficiency,
+                tilt: currentSettings.tilt,
+                price: currentSettings.price
+            };
+            const optimizedParams = {
+                area: currentSettings.area,
+                efficiency: currentSettings.efficiency,
+                tilt: 35,
+                price: currentSettings.price
+            };
+            const highEfficiencyParams = {
+                area: currentSettings.area,
+                efficiency: 0.95,
+                tilt: currentSettings.tilt,
+                price: currentSettings.price
+            };
+            runWhatIfScenario('default', defaultParams);
+            runWhatIfScenario('optimized', optimizedParams);
+            runWhatIfScenario('high-efficiency', highEfficiencyParams);
+        }
+        async function runWhatIfScenario(scenarioType, params = null) {
+            if (!params) {
+                if (scenarioType === 'default') {
+                    params = {
+                        area: currentSettings.area,
+                        efficiency: currentSettings.efficiency,
+                        tilt: currentSettings.tilt,
+                        price: currentSettings.price
+                    };
+                } else if (scenarioType === 'optimized') {
+                    params = {
+                        area: currentSettings.area,
+                        efficiency: currentSettings.efficiency,
+                        tilt: 35,
+                        price: currentSettings.price
+                    };
+                } else if (scenarioType === 'high-efficiency') {
+                    params = {
+                        area: currentSettings.area,
+                        efficiency: 0.95,
+                        tilt: currentSettings.tilt,
+                        price: currentSettings.price
+                    };
+                }
+            }
+            const predictionData = {
+                latitude: parseFloat(document.getElementById('latitude').value) || 23.0225,
+                longitude: parseFloat(document.getElementById('longitude').value) || 72.5714,
+                area: params.area,
+                efficiency: params.efficiency,
+                tilt: params.tilt,
+                price: params.price
+            };
+            const button = document.querySelector(`.scenario-btn[onclick*="${scenarioType}"]`);
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(predictionData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const totalGeneration = result.prediction.reduce((sum, val) => sum + val, 0) / 1000;
+                    const maxGeneration = Math.max(...result.prediction) / 1000;
+                    const savings = (totalGeneration * params.price).toFixed(2);
+                    document.getElementById(`${scenarioType}-gen`).textContent = totalGeneration.toFixed(2);
+                    document.getElementById(`${scenarioType}-peak`).textContent = maxGeneration.toFixed(2);
+                    document.getElementById(`${scenarioType}-savings`).textContent = savings;
+                    button.textContent = '✓ Done';
+                    button.style.backgroundColor = '#10b981';
+                    button.style.color = '#1e1e3f';
+
+                    setTimeout(() => {
+                        button.textContent = 'Run';
+                        button.style.backgroundColor = '';
+                        button.style.color = '';
+                        button.disabled = false;
+                    }, 2000);
+
+                    // Update comparison chart
+                    updateComparisonChart();
+
+                } else {
+                    throw new Error('Prediction failed');
+                }
+            } catch (error) {
+                console.error('What-if prediction error:', error);
+                document.getElementById(`${scenarioType}-gen`).textContent = '--';
+                document.getElementById(`${scenarioType}-peak`).textContent = '--';
+                document.getElementById(`${scenarioType}-savings`).textContent = '--';
+                button.textContent = '✗ Error';
+                button.style.backgroundColor = '#ef4444';
+                button.style.color = '#f1f5f9';
+
+                setTimeout(() => {
+                    button.textContent = 'Run';
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                    button.disabled = false;
+                }, 2000);
+
+                // Still update chart even on error
+                updateComparisonChart();
+            }
+        }
+        function updateComparisonChart() {
+            const scenarios = ['default', 'optimized', 'high-efficiency'];
+            const values = scenarios.map(s => {
+                const val = parseFloat(document.getElementById(`${s}-gen`).textContent);
+                return isNaN(val) ? 0 : val;
+            });
+
+            const bestIndex = values.indexOf(Math.max(...values));
+            const bestValue = values[bestIndex];
+            const defaultValue = values[0];
+
+            // Calculate potential increase
+            const potentialIncrease = defaultValue > 0 ? ((bestValue - defaultValue) / defaultValue) * 100 : 0;
+            const deltaClass = potentialIncrease >= 0 ? 'delta-positive' : 'delta-negative';
+            const deltaText = `${potentialIncrease >= 0 ? '+' : ''}${potentialIncrease.toFixed(1)}%`;
+
+            // Update summary stats
+            document.getElementById('potentialIncrease').textContent = `${potentialIncrease.toFixed(1)}%`;
+            document.getElementById('increaseDelta').textContent = deltaText;
+            document.getElementById('increaseDelta').className = `summary-delta ${deltaClass}`;
+            
+            // Calculate annual savings
+            const annualSavings = bestValue * 365 * 7.0;
+            document.getElementById('annualSavings').textContent = `₹${annualSavings.toFixed(0)}`;
+
+            // Render bar chart visualization
+            const chartPlaceholder = document.getElementById('comparisonChartPlaceholder');
+            if (values.some(v => v > 0)) {
+                chartPlaceholder.innerHTML = `
+                    <div style="height: 100%; display: flex; align-items: flex-end; justify-content: space-around; padding: 0 1rem;">
+                        ${scenarios.map((s, i) => {
+                            const height = (values[i] / 12) * 100;
+                            const color = i === bestIndex ? '#fbbf24' : 'rgba(251, 191, 36, 0.6)';
+                            return `
+                                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                                    <div style="width: 100%; background: linear-gradient(to top, ${color}, ${color}); border-radius: 4px 4px 0 0; height: ${Math.max(height, 20)}px; position: relative;">
+                                        <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; color: #e2e8f0; white-space: nowrap;">
+                                            ${values[i].toFixed(1)} kWh
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: #94a3b8; font-weight: 500; text-align: center;">
+                                        ${s === 'default' ? 'Default' : s === 'optimized' ? 'Optimized Tilt' : 'High Efficiency'}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            } else {
+                chartPlaceholder.innerHTML = 'Run scenarios to visualize performance comparison';
+            }
+        }
+        async function generateLivePrediction() {
+            const button = document.getElementById('refreshBtn');
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            try {
+                const predictionData = {
+                    latitude: parseFloat(document.getElementById('latitude').value) || 23.0225,
+                    longitude: parseFloat(document.getElementById('longitude').value) || 72.5714,
+                    area: currentSettings.area,
+                    efficiency: currentSettings.efficiency,
+                    tilt: currentSettings.tilt,
+                    price: currentSettings.price
+                };
+                const response = await fetch(`${currentSettings.apiUrl}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(predictionData)
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    updateDashboard(result);
+                    updateRecentPredictions(result);
+                    updateChartWithPrediction(result);
+                    updatePredictionStats({
+                        current: (result.prediction[4] || 0)/1000,
+                        peak: (Math.max(...result.prediction)/1000),
+                        efficiency: result.detailedInsights?.efficiencyPercent || 0,
+                        accuracy: result.accuracy || 94.2
+                    });
+                    document.getElementById('aiInsightBox').innerHTML = `
+                        <div class="ai-insight-text">${result.aiInsight}</div>
+                    `;
+                } else {
+                    throw new Error('Prediction failed');
+                }
+            } catch (error) {
+                console.error('Prediction error:', error);
+                document.getElementById('aiInsightBox').innerHTML = `
+                    <div class="ai-insight-text">Failed to generate insight. Check backend connection.</div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+        async function checkBackendConnection() {
+            const statusElement = document.getElementById('systemDetail');
+            const statusIcon = document.getElementById('systemStatus');
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/health`, { timeout: 5000 });
+                if (response.ok) {
+                    const health = await response.json();
+                    if (statusElement) statusElement.textContent = "Connected to Lumina.ai backend";
+                    if (statusIcon) {
+                        statusIcon.textContent = "Online";
+                        statusIcon.style.color = "#10b981";
+                    }
+                    document.getElementById('predictionDisclaimer').textContent = "Connected to backend. Generate predictions to see real-time data.";
+                } else {
+                    throw new Error("Backend returned non-OK status");
+                }
+            } catch (error) {
+                console.log("Backend connection failed:", error);
+                if (statusElement) statusElement.textContent = "Disconnected from backend";
+                if (statusIcon) {
+                    statusIcon.textContent = "Offline";
+                    statusIcon.style.color = "#ef4444";
+                }
+                document.getElementById('predictionDisclaimer').textContent = "Backend disconnected. Please check if the server is running.";
+            }
+        }
+        async function updateDashboardStats() {
+            await checkBackendConnection();
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/history?page=1&per_page=1`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const predictions = data.predictions;
+                    if (predictions && predictions.length > 0) {
+                        const pred = predictions[0];
+                        document.getElementById('todaysPredictions').textContent = data.pagination.total;
+                        document.getElementById('todayAccuracy').textContent = `${pred.accuracy.toFixed(1)}%`;
+                        const recentPredictions = document.getElementById('recentPredictions');
+                        if (recentPredictions) {
+                            recentPredictions.innerHTML = `
+                                <div class="prediction-item">
+                                    <div>
+                                        <div class="prediction-location">${pred.location}</div>
+                                        <div class="prediction-time">${new Date(pred.timestamp).toLocaleTimeString()}</div>
+                                    </div>
+                                    <div class="prediction-value">
+                                        <div class="prediction-power">${pred.peakPower.toFixed(2)} kW</div>
+                                        <div class="prediction-accuracy">${pred.accuracy.toFixed(1)}% accuracy</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        const aiInsightBox = document.getElementById('aiInsightBox');
+                        if (aiInsightBox && pred.aiInsight) {
+                            aiInsightBox.innerHTML = `
+                                <div class="ai-insight-text">${pred.aiInsight}</div>
+                            `;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log("Failed to fetch dashboard stats:", error);
+            }
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/files`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('dataFiles').textContent = data.files.length;
+                }
+            } catch (error) {
+                console.log("Failed to fetch file count:", error);
+            }
+        }
+        function setupFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            function highlight() {
+                uploadArea.classList.add('drag-over');
+            }
+            function unhighlight() {
+                uploadArea.classList.remove('drag-over');
+            }
+            fileInput.addEventListener('change', handleFiles);
+            function handleFiles(e) {
+                const files = Array.from(e.target.files);
+                if (files.length > 0) {
+                    uploadFile(files[0]);
+                }
+            }
+            uploadArea.addEventListener('drop', handleDrop);
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    uploadFile(files[0]);
+                }
+            }
+            async function uploadFile(file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                const uploadButton = uploadArea.querySelector('button');
+                const originalText = uploadButton.innerHTML;
+                uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+                uploadButton.disabled = true;
+                try {
+                    const response = await fetch(`${currentSettings.apiUrl}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        alert('File uploaded successfully!');
+                        loadUploadedFiles();
+                    } else {
+                        throw new Error('Upload failed');
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    alert('Failed to upload file. Please try again.');
+                } finally {
+                    uploadButton.innerHTML = originalText;
+                    uploadButton.disabled = false;
+                    fileInput.value = '';
+                }
+            }
+        }
+        async function loadUploadedFiles() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '<div class="loading">Loading upload history...</div>';
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/files`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.files.length === 0) {
+                        fileList.innerHTML = '<div class="empty-state"><h3>No files uploaded yet</h3><p>Upload your solar data files to get started.</p></div>';
+                        return;
+                    }
+                    fileList.innerHTML = '';
+                    data.files.forEach(file => {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        fileItem.innerHTML = `
+                            <div class="file-info">
+                                <i class="fas fa-file-${file.fileType === 'csv' ? 'csv' : file.fileType === 'txt' ? 'file-alt' : 'excel'} file-icon"></i>
+                                <span class="file-name">${file.filename}</span>
+                            </div>
+                            <div class="file-meta">
+                                <span class="file-date">${new Date(file.uploadDate).toLocaleString()}</span>
+                                <span class="file-status status-${file.status === 'processed' ? 'success' : 'pending'}">${file.status}</span>
+                            </div>
+                        `;
+                        fileList.appendChild(fileItem);
+                    });
+                } else {
+                    fileList.innerHTML = '<div class="empty-state"><h3>Failed to load files</h3><p>Could not connect to backend.</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading files:', error);
+                fileList.innerHTML = '<div class="empty-state"><h3>Connection Error</h3><p>Could not connect to backend.</p></div>';
+            }
+        }
+        async function loadHistory() {
+            const historyContainer = document.getElementById('historyContainer');
+            historyContainer.innerHTML = '<div class="loading">Loading prediction history...</div>';
+            const days = document.getElementById('historyDays').value;
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/history?page=1&per_page=10`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.predictions.length === 0) {
+                        historyContainer.innerHTML = '<div class="empty-state"><h3>No prediction history</h3><p>Generate predictions to see them here.</p></div>';
+                        return;
+                    }
+                    historyContainer.innerHTML = `
+                        <div style="overflow-x: auto;">
+                            <table class="reports-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Location</th>
+                                        <th>Total Gen (kWh)</th>
+                                        <th>Peak Power (kW)</th>
+                                        <th>Accuracy</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    const tbody = document.getElementById('historyTableBody');
+                    tbody.innerHTML = '';
+                    data.predictions.forEach(pred => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${new Date(pred.timestamp).toLocaleString()}</td>
+                            <td>${pred.location}</td>
+                            <td>${pred.totalGeneration}</td>
+                            <td>${pred.peakPower}</td>
+                            <td>${pred.accuracy}%</td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.875rem;" onclick="viewPrediction('${pred.id}')">
+                                    View
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    historyContainer.innerHTML = '<div class="empty-state"><h3>Failed to load history</h3><p>Could not connect to backend.</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                historyContainer.innerHTML = '<div class="empty-state"><h3>Connection Error</h3><p>Could not connect to backend.</p></div>';
+            }
+        }
+        async function viewPrediction(id) {
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/history`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const prediction = data.predictions.find(p => p.id === id);
+                    if (prediction) {
+                        alert(`Viewing prediction: ${prediction.location}
+Total: ${prediction.totalGeneration} kWh
+Peak: ${prediction.peakPower} kW
+Accuracy: ${prediction.accuracy}%
+AI Insight: ${prediction.aiInsight}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error viewing prediction:', error);
+                alert('Failed to load prediction details.');
+            }
+        }
+        async function loadReportsData() {
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/reports/summary?days=30`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('totalPredictions').textContent = data.summary.totalPredictions;
+                    document.getElementById('avgDailyGen').textContent = `${data.summary.avgDailyGeneration} kWh`;
+                    document.getElementById('totalEstGen').textContent = `${data.summary.totalEstimatedGeneration} kWh`;
+                    document.getElementById('avgAccuracyReport').textContent = `${data.summary.avgAccuracy}%`;
+                    const topLocations = document.getElementById('topLocations');
+                    if (data.summary.topLocation !== "No data") {
+                        topLocations.innerHTML = `<div style="color: #f1f5f9; font-weight: 500;">${data.summary.topLocation}</div>`;
+                    } else {
+                        topLocations.innerHTML = '<div class="empty-state"><h3>No location data</h3><p>Generate predictions to see location stats.</p></div>';
+                    }
+                    updateDailyTrendsChart(data.dailyTrends);
+                    updateDetailedReportTable(data);
+                } else {
+                    throw new Error('Failed to load reports data');
+                }
+            } catch (error) {
+                console.error('Error loading reports ', error);
+                document.getElementById('totalPredictions').textContent = '--';
+                document.getElementById('avgDailyGen').textContent = '-- kWh';
+                document.getElementById('totalEstGen').textContent = '-- kWh';
+                document.getElementById('avgAccuracyReport').textContent = '--%';
+                document.getElementById('topLocations').innerHTML = '<div class="empty-state"><h3>Connection Error</h3><p>Could not connect to backend.</p></div>';
+                document.getElementById('dailyTrendsChart').innerHTML = '<div class="empty-state"><h3>Connection Error</h3><p>Could not connect to backend.</p></div>';
+                document.getElementById('reportTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">Connection Error</td></tr>';
+            }
+        }
+        function updateDailyTrendsChart(dailyTrends) {
+            const chartContainer = document.getElementById('dailyTrendsChart');
+            if (dailyTrends.length === 0) {
+                chartContainer.innerHTML = '<div class="empty-state"><h3>No trend data</h3><p>Generate predictions to see daily trends.</p></div>';
+                return;
+            }
+            chartContainer.innerHTML = `
+                <div style="height: 300px; display: flex; align-items: flex-end; gap: 1rem; padding: 1rem 0;">
+                    ${dailyTrends.slice(-7).map(day => {
+                        const height = (day.avgGeneration / 10) * 100;
+                        return `
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                                <div style="width: 100%; background: linear-gradient(to top, #fbbf24, #f59e0b); border-radius: 4px 4px 0 0; height: ${Math.max(height, 20)}px; position: relative;">
+                                    <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; color: #e2e8f0; white-space: nowrap;">
+                                        ${new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.875rem; color: #94a3b8; font-weight: 500;">${day.avgGeneration.toFixed(1)} kWh</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        function updateDetailedReportTable(data) {
+            const tbody = document.getElementById('reportTableBody');
+            if (!data || !data.predictions || data.predictions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No data available</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            data.predictions.forEach(pred => {
+                const row = document.createElement('tr');
+                const savings = (pred.totalGeneration * 7.0).toFixed(2);
+                row.innerHTML = `
+                    <td>${new Date(pred.timestamp).toLocaleDateString()}</td>
+                    <td>${pred.location}</td>
+                    <td>${pred.totalGeneration.toFixed(2)}</td>
+                    <td>${pred.peakPower.toFixed(2)}</td>
+                    <td>${pred.accuracy.toFixed(1)}%</td>
+                    <td>₹${savings}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        async function exportData(type) {
+            try {
+                const response = await fetch(`${currentSettings.apiUrl}/export/${type}`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (type === 'predictions' || type === 'summary') {
+                        const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.setAttribute('hidden', '');
+                        a.setAttribute('href', url);
+                        a.setAttribute('download', result.filename);
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        alert(`Export successful! Downloaded ${result.filename}`);
+                    }
+                } else {
+                    throw new Error('Export failed');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Export failed. Please try again.');
+            }
+        }
+        setInterval(updateDashboardStats, 30000);
+        window.addEventListener('load', () => {
+            if (document.getElementById('dashboard').classList.contains('active')) {
+                updateDashboardStats();
+            }
+        });
+    </script>
+</body>
+</html>

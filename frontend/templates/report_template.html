@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lumina.ai Solar Report</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 2cm; color: #333; }
+        h1 { color: #fbbf24; text-align: center; border-bottom: 2px solid #fbbf24; padding-bottom: 0.5rem; }
+        h2 { color: #1e1e3f; border-bottom: 1px dashed #ccc; padding-bottom: 0.3rem; }
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        th, td { border: 1px solid #ccc; padding: 0.75rem; text-align: left; }
+        th { background-color: #f1f5f9; font-weight: 600; }
+        tr:nth-child(even) { background-color: #f9fafb; }
+        .footer { text-align: center; margin-top: 3rem; color: #64748b; font-size: 0.9rem; }
+        .chart-placeholder { height: 150px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); opacity: 0.1; margin: 1rem 0; display: flex; align-items: center; justify-content: center; color: #64748b; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Lumina.ai Solar Generation Report</h1>
+    <p>Generated on: {{ datetime.now().strftime('%Y-%m-%d %H:%M') }}</p>
+
+    <h2>Recent Predictions</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Gen (kWh)</th>
+                <th>Peak (kW)</th>
+                <th>Savings (₹)</th>
+                <th>Accuracy</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pred in recent_data %}
+            <tr>
+                <td>{{ pred.date }}</td>
+                <td>{{ pred.location }}</td>
+                <td>{{ pred.generation }}</td>
+                <td>{{ pred.peak }}</td>
+                <td>₹{{ pred.savings }}</td>
+                <td>{{ pred.accuracy }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="chart-placeholder">[Live chart visualization would appear here]</div>
+
+    <div class="footer">
+        © 2025 Lumina.ai — AI-Powered Solar Analytics Platform
+    </div>
+</body>
+</html>

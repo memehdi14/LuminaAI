@@ -1,0 +1,10 @@
+flask
+flask-cors
+pandas
+pvlib
+joblib
+python-dotenv
+requests
+ollama
+sqlite3
+numpy
